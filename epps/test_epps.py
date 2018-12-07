@@ -162,7 +162,7 @@ class PyEMSTesting(object):
             return 1
 
 
-if __name__ == "__main__":
+def main():
     if len(sys.argv) != 2:
         print("Bad call to tester, give one command line argument, the full path to a py_ems file")
         sys.exit(2)
@@ -170,3 +170,8 @@ if __name__ == "__main__":
         arg_file_path = sys.argv[1]
         response = PyEMSTesting.py_ems_file_tester(arg_file_path)
         sys.exit(response)
+
+
+if __name__ == "__main__":
+    main()
+

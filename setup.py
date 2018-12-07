@@ -4,7 +4,7 @@ import codecs
 import os
 import setuptools
 
-from pyms import version
+from epps import version
 
 
 this_dir = os.path.abspath(os.path.dirname(__file__))
@@ -12,9 +12,9 @@ with codecs.open(os.path.join(this_dir, 'README.rst'), encoding='utf-8') as i_fi
     long_description = i_file.read()
 
 setuptools.setup(
-    name='energyplus_pyms',
+    name='energyplus_epps',
     version=version,
-    description='EnergyPlus Python EMS Interface',
+    description='EnergyPlus Python Scripting Interface',
     long_description=long_description,
     url='https://github.com/nrel/energyplus',
     author='DOE',
@@ -32,5 +32,7 @@ setuptools.setup(
     include_package_data=True,
     install_requires=[],
     extras_require={},
-    scripts=['pyms/test_py_ems'],
+    entry_points = {
+        'console_scripts': ['test_script=epps.test_epps:main']
+    }
 )
