@@ -10,23 +10,23 @@ class CallingPointMirror(object):
     HVAC_TIME_STEP_LOOP = 1
 
 
-class EMSInterface(object):
+class EnergyPlusPlugin(object):
     """
-    The EMSInterface class is the base class for all PythonEMS classes.
+    The EnergyPlusPlugin class is the base class for all Python Plugin classes.
     Derived classes should inherit from this class and override the functions which include a NotImplementedError
     here in the base class definition.
     """
 
     def __init__(self):
         """
-        Constructor for the EMS interface base class.  Does not take any arguments, just initializes some member vars.
+        Constructor for the Plugin interface base class.  Does not take any arguments, just initializes some member vars.
         """
         super().__init__()
         self.my_sensed_data = {}
 
-    def ems_main(self) -> List[float]:
+    def main(self) -> List[float]:
         """
-        Performs the main EMS action, looking up sensed data as needed, and returning a list of floats corresponding
+        Performs the main plugin action, looking up sensed data as needed, and returning a list of floats corresponding
         to actuators in the calling program.  This function can call other functions as needed, as well as importing
         standard lib packages to use in the calculations.
 
@@ -38,22 +38,22 @@ class EMSInterface(object):
         :return: A list of floating point values representing the actuated value of each assigned actuator.
         """
         raise NotImplementedError(
-            "Encountered EMSInterface::ems_main base function -- override this in your EMS class"
+            "Encountered EnergyPlusPlugin::main base function -- override this in your plugin class"
         )
 
     def get_calling_point(self) -> int:
         """
-        This function returns an integer calling point to indicate when this EMS program is to be executed.
-        The list of valid integers is in the CallingPoint enum class, which is in include/ems_manager.h.
+        This function returns an integer calling point to indicate when this plugin program is to be executed.
+        The list of valid integers is in the CallingPoint enum class, which is in include/plugin_manager.h.
 
         **Derived classes must override this function!**
 
-        :return: An integer identifier for the calling point where this EMS class should be executed.
+        :return: An integer identifier for the calling point when this plugin should be executed.
 
         TODO: Could this be a list?
         """
         raise NotImplementedError(
-            "Encountered EMSInterface::get_calling_point base function -- override this in your EMS class"
+            "Encountered EnergyPlusPlugin::get_calling_point base function -- override this in your plugin class"
         )
 
     def get_sensed_data_list(self) -> List[str]:
@@ -66,17 +66,17 @@ class EMSInterface(object):
             return ["zone_one_temperature", "zone_two_temperature"]
         This would result in the member variable self.my_sensed_data dictionary having two keys:
         ("zone_one_temperature", "zone_two_temperature"), each of which having a value that is a floating point
-        variable that is updated by E+ right before the call to this EMS function
+        variable that is updated by E+ right before the call to this plugin function
 
         Tip: Since the string keys are going to be returned here, and then likely used as lookups in other functions
         in this class, it is recommended to create constants of each to avoid spelling typos and make the code cleaner.
 
-        **Derived classes must override this function!  If your EMS does not need sensors, return an empty list**
+        **Derived classes must override this function!  If your plugin does not need sensors, return an empty list**
 
         :return: A list of strings, each of which corresponding to a meaningful sensor in the calling program
         """
         raise NotImplementedError(
-            "Encountered EMSInterface::get_sensed_data_list base function -- override this in your EMS class"
+            "Encountered EnergyPlusPlugin::get_sensed_data_list base function -- override this in your plugin class"
         )
 
     def get_actuator_list(self) -> List[str]:
@@ -87,15 +87,15 @@ class EMSInterface(object):
 
         Example:
             return ["zoneOneDamperPosition", "zoneTwoDamperPosition"]
-        This would result in this EMS program being responsible for actuating those values through the return values
-        from the ems_main function.
+        This would result in this plugin being responsible for actuating those values through the return values
+        from the main function.
 
-        **Derived classes must override this function!  If your EMS does not need actuators, then what does it do!?**
+        **Derived classes must override this function!  If your plugin does not need actuators, then what does it do!?**
 
         :return: A list of strings, each of which corresponding to a meaningful actuator in the calling program
         """
         raise NotImplementedError(
-            "Encountered EMSInterface::get_actuator_list base function -- override this in your EMS class"
+            "Encountered EnergyPlusPlugin::get_actuator_list base function -- override this in your plugin class"
         )
 
     def update_sensed_datum(self, sensor_id: str, value: float) -> None:
@@ -109,3 +109,4 @@ class EMSInterface(object):
         :param value: The sensed value to be seen by the ems main function when it is called
         """
         self.my_sensed_data[sensor_id] = value
+
