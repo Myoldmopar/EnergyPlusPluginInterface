@@ -1,5 +1,9 @@
 from typing import List
 
+from ctypes import cdll, c_bool, c_char_p, c_double, c_void_p
+import os
+import sys
+
 
 class CallingPointMirror(object):
     """
@@ -19,10 +23,13 @@ class EnergyPlusPlugin(object):
 
     def __init__(self):
         """
-        Constructor for the Plugin interface base class.  Does not take any arguments, just initializes some member vars.
+        Constructor for the Plugin interface base class.  Does not take any arguments, initializes member variables
         """
         super().__init__()
         self.my_sensed_data = {}
+        self.api = None  # set up inside _setup_api_function_calls()
+
+        self._setup_api_function_calls()
 
     def main(self) -> List[float]:
         """
@@ -110,3 +117,33 @@ class EnergyPlusPlugin(object):
         """
         self.my_sensed_data[sensor_id] = value
 
+    def _setup_api_function_calls(self):
+        """
+        This function sets up the api member variable by dynamically linking to the FakeEnergyPlus library API
+        The api member variable will then have all the "built-in" functions available that used to be defined
+        as EMS functions.  This includes physical property evaluation, and some simulation functions (issue fatal, etc.)
+        
+        This method does not return anything, and should **DEFINITELY NOT** be overridden in a derived class
+        
+        :return: None
+        """
+
+        # we expect the C++ DLL to be available at the root of the installation.
+        # we also expect this interface folder to be placed at the root of the installation
+        # so the DLL is simply one folder up, and at the appropriate name
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        if sys.platform.startswith('linux'):
+            self.api = cdll.LoadLibrary(os.path.join(dir_path, '..', 'libFakeAPI.so'))
+        elif sys.platform.startswith('darwin'):
+            self.api = cdll.LoadLibrary(os.path.join(dir_path, '..', 'libFakeAPI.dylib'))
+        else:  # assume Windows
+            self.api = cdll.LoadLibrary(os.path.join(dir_path, '..', 'FakeAPI.dll'))
+
+        self.api.saturationPressureFunctionOfTemperature.argtypes = [c_double]
+        self.api.saturationPressureFunctionOfTemperature.restype = c_double
+        self.api.eplusWarning.argtypes = [c_char_p]
+        self.api.eplusWarning.restype = c_void_p
+        self.api.eplusSevereError.argtypes = [c_char_p]
+        self.api.eplusSevereError.restype = c_void_p
+        self.api.eplusFatalHalt.argtypes = [c_char_p]
+        self.api.eplusFatalHalt.restype = c_void_p
